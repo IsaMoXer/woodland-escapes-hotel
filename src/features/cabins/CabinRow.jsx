@@ -1,27 +1,17 @@
 import styled from "styled-components";
-
-import CreateCabinForm from "./CreateCabinForm";
-import { useDeleteCabin } from "./useDeleteCabin";
-import { formatCurrency } from "../../utils/helpers";
 import { HiPencil, HiTrash } from "react-icons/hi";
 import { HiSquare2Stack } from "react-icons/hi2";
+
+import CreateCabinForm from "./CreateCabinForm";
+
+import { useDeleteCabin } from "./useDeleteCabin";
+import { formatCurrency } from "../../utils/helpers";
 import { useCreateCabin } from "./useCreateCabin";
+
 import Modal from "../../ui/Modal";
-import ConfirmDelete from "../../ui/ConfirmDelete";
 import Table from "../../ui/Table";
 import Menus from "../../ui/Menus";
-
-/* const TableRow = styled.div`
-  display: grid;
-  grid-template-columns: 0.6fr 1.8fr 2.2fr 1fr 1fr 1fr;
-  column-gap: 2.4rem;
-  align-items: center;
-  padding: 1.4rem 2.4rem;
-
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--color-grey-100);
-  }
-`; */
+import ConfirmDelete from "../../ui/ConfirmDelete";
 
 const Img = styled.img`
   display: block;

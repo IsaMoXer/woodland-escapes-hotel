@@ -1,5 +1,4 @@
 import styled from "styled-components";
-/* import { HiArrowUpOnSquare } from "react-icons/hi2"; */
 
 import BookingDataBox from "./BookingDataBox";
 import Row from "../../ui/Row";
@@ -58,11 +57,7 @@ function BookingDetail() {
 
       <ButtonGroup>
         {status === "checked-in" && (
-          <Button
-            /* icon={<HiArrowUpOnSquare />} */
-            onClick={() => checkout(bookingId)}
-            disabled={isCheckingOut}
-          >
+          <Button onClick={() => checkout(bookingId)} disabled={isCheckingOut}>
             Check out
           </Button>
         )}

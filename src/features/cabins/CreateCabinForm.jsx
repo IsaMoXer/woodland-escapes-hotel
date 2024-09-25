@@ -45,8 +45,8 @@ function CreateCabinForm({ cabinToEdit = {}, onCloseModal }) {
       createCabin(
         { ...data, image },
         {
-          onSuccess: data => {
-            console.log(data);
+          onSuccess: () => {
+            //console.log(data);
             reset();
             //Optional chaining in case this form is re-used and the function is not passed as a prop
             onCloseModal?.();

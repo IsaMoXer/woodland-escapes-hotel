@@ -1,6 +1,9 @@
 import styled, { css } from "styled-components";
 
 const Form = styled.form`
+  overflow: hidden;
+  font-size: 1.4rem;
+
   ${props =>
     props.type === "regular" &&
     css`
@@ -16,10 +19,10 @@ const Form = styled.form`
     props.type === "modal" &&
     css`
       width: 80rem;
+      max-height: 80vh; /* Limit the height to 80% of the viewport height */
+      overflow: auto; /* Enable vertical scrolling */
+      scrollbar-width: none;
     `}
-    
-  overflow: hidden;
-  font-size: 1.4rem;
 `;
 
 Form.defaultProps = {

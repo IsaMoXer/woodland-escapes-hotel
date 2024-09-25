@@ -7,6 +7,7 @@ import {
   HiOutlineUsers,
   HiOutlineCog6Tooth,
 } from "react-icons/hi2";
+import { BsSuitcase } from "react-icons/bs";
 
 const NavList = styled.ul`
   display: flex;
@@ -66,6 +67,12 @@ function MainNav() {
           <StyledNavLink to="/bookings">
             <HiOutlineCalendarDays />
             <span>Bookings</span>
+          </StyledNavLink>
+        </li>
+        <li>
+          <StyledNavLink to="/guests">
+            <BsSuitcase />
+            <span>Guests</span>
           </StyledNavLink>
         </li>
         <li>

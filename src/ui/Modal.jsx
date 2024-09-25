@@ -52,9 +52,11 @@ const Button = styled.button`
     color: var(--color-grey-500);
   }
 `;
+// Compound component pattern
 const ModalContext = createContext();
 
 function Modal({ children }) {
+  // If there is more than one window inside the same modal, we need to asign a name to each one
   const [openName, setOpenName] = useState("");
 
   const open = setOpenName; // same as --> open(value) = setOpenName(value)
@@ -71,22 +73,27 @@ function Modal({ children }) {
 function Open({ children, opens: opensWindowName }) {
   const { open } = useContext(ModalContext);
 
+  // Clone the button to add more properties outside the component itself
   return cloneElement(children, { onClick: () => open(opensWindowName) });
 }
 
 function Window({ children, name }) {
   const { openName, close } = useContext(ModalContext);
 
+  // ref selects the modal window from DOM to close when clicking outside it
   const modalRef = useOutsideClick(close);
 
+  // Opens the the window that is asign to the right button
   if (name !== openName) return null;
 
+  // Create a portal (locates component outside the DOM tree, but not the React Tree) to avoid conflict when overflow is set to hidden
   return createPortal(
     <Overlay>
       <StyledModal ref={modalRef}>
         <Button onClick={close}>
           <HiXMark />
         </Button>
+        {/* We clone the children to pass the close function as a property to the CreateCabinForm */}
         <div>{cloneElement(children, { onCloseModal: close })}</div>
       </StyledModal>
     </Overlay>,

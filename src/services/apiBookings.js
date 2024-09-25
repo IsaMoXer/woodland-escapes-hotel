@@ -132,3 +132,34 @@ export async function deleteBooking(id) {
   }
   return data;
 }
+
+export async function createBooking(newBooking) {
+  // REMEMBER RLS POLICIES
+  const { data, error } = await supabase
+    .from("bookings")
+    .insert([newBooking])
+    .select();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Booking could not be created");
+  }
+
+  return data;
+}
+
+// Get all the bookings for certain cabin after today
+export async function getBookingsFromCabinFromToday(cabinId) {
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("cabinId", cabinId) // Filter by cabinId
+    .gte("startDate", getToday()); // Filter for startDate greater than or equal to today
+
+  if (error) {
+    console.error(error);
+    throw new Error("Bookings could not be loaded");
+  }
+
+  return data;
+}
