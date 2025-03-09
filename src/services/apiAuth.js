@@ -1,35 +1,35 @@
 import supabase, { supabaseUrl } from "./supabase";
 
 export async function signup({ fullName, email, password }) {
-  // data = {session: {}, user: {...user_metadata:{avatar:"", email:...}}
+	// data = {session: {}, user: {...user_metadata:{avatar:"", email:...}}
 
-  // Save the current session before signing up a new user
-  const { data: savedSessionData } = await supabase.auth.getSession();
+	// Save the current session before signing up a new user
+	const { data: savedSessionData } = await supabase.auth.getSession();
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        fullName,
-        avatar: "",
-      },
-    },
-  });
-  // Log the entire response for debugging
-  console.log("Sign-up response:", { user, error });
+	const {
+		data: { user },
+		error,
+	} = await supabase.auth.signUp({
+		email,
+		password,
+		options: {
+			data: {
+				fullName,
+				avatar: "",
+			},
+		},
+	});
+	// Log the entire response for debugging
+	console.log("Sign-up response:", { user, error });
 
-  //If there was a previously authenticated user, restore their session
-  // This action should be placed right after signUp, otherwise the authError will stop the restore
-  if (savedSessionData) {
-    await supabase.auth.setSession(savedSessionData.session);
-  }
-  if (error) throw new Error(error.message);
+	//If there was a previously authenticated user, restore their session
+	// This action should be placed right after signUp, otherwise the authError will stop the restore
+	if (savedSessionData) {
+		await supabase.auth.setSession(savedSessionData.session);
+	}
+	if (error) throw new Error(error.message);
 
-  /* // Handle errors
+	/* // Handle errors
   let authError = null;
   if (user && !user.identities.length) {
     authError = {
@@ -45,71 +45,93 @@ export async function signup({ fullName, email, password }) {
 
   if (authError) throw new Error(authError.message); */
 
-  return user;
+	return user;
 }
 
 export async function login({ email, password }) {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+	const { data, error } = await supabase.auth.signInWithPassword({
+		email,
+		password,
+	});
 
-  if (error) throw new Error(error.message);
+	if (error) throw new Error(error.message);
 
-  //console.log(data.session.user.aud, data.user.role);
+	//console.log(data.session.user.aud, data.user.role);
 
-  // data = {session: {...}, user: {...}}
-  return data;
+	// data = {session: {...}, user: {...}}
+	return data;
 }
 
 export async function getCurrentUser() {
-  const { data: dataSession } = await supabase.auth.getSession();
+	const { data: dataSession } = await supabase.auth.getSession();
 
-  if (!dataSession.session) return null;
+	if (!dataSession.session) return null;
 
-  // We could get the user from the dataSession, but is more secure to fetch the user from the server again
-  const { data, error } = await supabase.auth.getUser();
+	// We could get the user from the dataSession, but is more secure to fetch the user from the server again
+	const { data, error } = await supabase.auth.getUser();
 
-  // data = {user: {}}
-  //console.log("Data from api", data.user.role);
+	// data = {user: {}}
+	//console.log("Data from api", data.user.role);
 
-  if (error) throw new Error(error.message);
+	if (error) throw new Error(error.message);
 
-  return data?.user;
+	return data?.user;
 }
 
 export async function logout() {
-  const { error } = await supabase.auth.signOut();
+	const { error } = await supabase.auth.signOut();
 
-  if (error) throw new Error(error.message);
+	if (error) throw new Error(error.message);
 }
 
 export async function updateCurrentUser({ password, fullName, avatar }) {
-  // 1. Update password OR fullName
-  let updateData;
-  if (password) updateData = { password };
-  if (fullName) updateData = { data: { fullName } };
-  const { data, error } = await supabase.auth.updateUser(updateData);
+	// 0. Get the current user
+	const currentUser = await getCurrentUser();
+	if (!currentUser) throw new Error("No user is currently logged in");
 
-  if (error) throw new Error(error.message);
-  if (!avatar) return data;
+	// Check permissions if attempting to update password
+	if (password) {
+		const { data: permissions, error: permissionsError } = await supabase
+			.from("user_permissions")
+			.select("can_update_password")
+			.eq("user_id", currentUser.id)
+			.single();
 
-  // 2. Upload the avatar image
-  const fileName = `avatar-${data.user.id}-${Math.random()}`;
+		if (permissionsError)
+			throw new Error("Error fetching user permissions");
+		if (!permissions.can_update_password) {
+			throw new Error(
+				"You do not have permission to update your password"
+			);
+		}
+	}
+	// 1. Update password OR fullName
+	let updateData;
+	if (password) updateData = { password };
+	if (fullName) updateData = { data: { fullName } };
+	const { data, error } = await supabase.auth.updateUser(updateData);
 
-  const { error: storageError } = await supabase.storage
-    .from("avatars")
-    .upload(fileName, avatar);
+	if (error) throw new Error(error.message);
+	if (!avatar) return data;
 
-  if (storageError) throw new Error(storageError.message);
+	// 2. Upload the avatar image
+	const fileName = `avatar-${data.user.id}-${Math.random()}`;
 
-  // 3. Update avatar in the user
-  const { data: updatedUser, error: error2 } = await supabase.auth.updateUser({
-    data: {
-      avatar: `${supabaseUrl}/storage/v1/object/public/avatars/${fileName}`,
-    },
-  });
+	const { error: storageError } = await supabase.storage
+		.from("avatars")
+		.upload(fileName, avatar);
 
-  if (error2) throw new Error(error2.message);
-  return updatedUser;
+	if (storageError) throw new Error(storageError.message);
+
+	// 3. Update avatar in the user
+	const { data: updatedUser, error: error2 } = await supabase.auth.updateUser(
+		{
+			data: {
+				avatar: `${supabaseUrl}/storage/v1/object/public/avatars/${fileName}`,
+			},
+		}
+	);
+
+	if (error2) throw new Error(error2.message);
+	return updatedUser;
 }
