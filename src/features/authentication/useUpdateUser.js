@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 
 import { updateCurrentUser } from "../../services/apiAuth";
 
-export function useUpdateUser() {
+export function useUpdateUser(reset) {
 	const queryClient = useQueryClient();
 
 	// Function to edit a cabin (React Query)
@@ -12,6 +12,11 @@ export function useUpdateUser() {
 		mutationFn: updateCurrentUser,
 		onSuccess: () => {
 			toast.success("User account successfully updated");
+
+			// Reset the form fields after successful update
+			if (reset) reset();
+
+			// Invalidate and refetch the "user" query to ensure updated data
 			queryClient.invalidateQueries({
 				queryKey: ["user"],
 			});
